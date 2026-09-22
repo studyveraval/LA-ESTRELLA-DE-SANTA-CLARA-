@@ -15,7 +15,7 @@ def cargar_datos():
         df = pd.read_excel("BASEDATA2.0.xlsx")
     except Exception as e:
         st.error(
-            f"❌ No se encontró el archivo 'BASEDATA2.0.xlsx'. Asegúrate de haberlo subido al repositorio."
+            "❌ No se encontró el archivo 'BASEDATA2.0.xlsx'. Asegúrate de haberlo subido al repositorio."
         )
         return None
 
@@ -55,15 +55,21 @@ df_lotes = cargar_datos()
 
 # Interfaz principal
 st.title("🔎 Cotizador - La Estrella de Santa Clara")
-st.write("Ingresa la Manzana y el Número de lote para generar la cotización.")
+st.write(
+    "Ingresa la Manzana, el Número de lote y opcionalmente el nombre del cliente para generar la cotización."
+)
 
 # Formulario de búsqueda
-col1, col2 = st.columns(2)
-with col1:
+col_cliente, col_mz, col_num = st.columns([2, 1, 1])
+with col_cliente:
+    nombre_cliente = st.text_input(
+        "Nombre del cliente (Opcional):", placeholder="Ej. Juan Pérez"
+    ).strip()
+with col_mz:
     mz_input = (
         st.text_input("Manzana (Mz):", placeholder="Ej. A").strip().upper()
     )
-with col2:
+with col_num:
     num_input = (
         st.text_input("Número / Lote:", placeholder="Ej. 12").strip().upper()
     )
@@ -135,3 +141,38 @@ if st.button("🔍 Buscar y Cotizar", type="primary", use_container_width=True):
             #### 💳 **24 Cuotas Mensuales de: ${cuota_24:,.2f} USD**
             """
             )
+
+            # CONSTRUCCIÓN DEL MENSAJE PARA WHATSAPP
+            saludo = (
+                f"Estimado(a) *{nombre_cliente}*,"
+                if nombre_cliente
+                else "Estimado(a) cliente,"
+            )
+
+            mensaje_wa = f"""{saludo}
+Le envío la cotización detallada para el lote de su interés en *Proyectó La Estrella de Santa Clara*:
+
+📌 *DATOS DEL LOTE:*
+• *Ubicación:* Manzana {mz_input} - Lote {num_input} ({ubicacion})
+• *Área Total:* {metraje:,.2f} m²
+• *Precio por m²:* ${precio_m2:,.2f} USD
+
+💵 *OPCIONES AL CONTADO:*
+• *Precio de Lista:* ${precio_lista:,.2f} USD
+• *Con 10% de Descuento:* ${precio_10_desc:,.2f} USD
+• *Con 20% de Descuento (Promocional):* ${precio_20_desc:,.2f} USD
+
+📅 *OPCIÓN FINANCIADA (5% Desc.):*
+• *Precio Final:* ${precio_5_desc:,.2f} USD
+• *Cuota Inicial (40%):* ${inicial_40:,.2f} USD
+• *Saldo a financiar:* ${saldo_financiar:,.2f} USD
+• *Financiamiento:* 24 cuotas mensuales de *${cuota_24:,.2f} USD*
+
+Quedo a su entera disposición si desea coordinar una visita a la parcela o resolver cualquier consulta. ¡Aproveche esta gran oportunidad! 🏡✨"""
+
+            st.markdown("---")
+            st.markdown("### 📲 Mensaje listo para enviar por WhatsApp")
+            st.write(
+                "Pasa el cursor sobre el cuadro y usa el botón de **Copiar** que aparece arriba a la derecha del texto:"
+            )
+            st.code(mensaje_wa, language="markdown")
