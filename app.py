@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(
     page_title="Cotizador - La Estrella de Santa Clara",
     page_icon="🏢",
-    layout="centered",
+    layout="wide",  # Cambiado a 'wide' para mejor aprovechamiento del espacio
 )
 
 
@@ -55,30 +55,39 @@ df_lotes = cargar_datos()
 
 # Interfaz principal
 st.title("🔎 Cotizador - La Estrella de Santa Clara")
-st.write(
-    "Ingresa los datos del cliente, lote y el tipo de cambio del día para generar la cotización."
+st.caption(
+    "Ingresa los datos del cliente, lote y tipo de cambio para generar la cotización oficial."
 )
 
 # Formulario de entrada
-col_cliente, col_mz, col_num, col_tc = st.columns([2, 1, 1, 1])
-with col_cliente:
-    nombre_cliente = st.text_input(
-        "Nombre cliente (Opcional):", placeholder="Ej. Juan Pérez"
-    ).strip()
-with col_mz:
-    mz_input = (
-        st.text_input("Manzana (Mz):", placeholder="Ej. A").strip().upper()
-    )
-with col_num:
-    num_input = (
-        st.text_input("Número / Lote:", placeholder="Ej. 12").strip().upper()
-    )
-with col_tc:
-    tipo_cambio = st.number_input(
-        "Tipo Cambio (S/):", value=3.75, step=0.01, format="%.2f"
+with st.container(border=True):
+    col_cliente, col_mz, col_num, col_tc = st.columns([2, 1, 1, 1])
+    with col_cliente:
+        nombre_cliente = st.text_input(
+            "👤 Nombre cliente (Opcional):", placeholder="Ej. Juan Pérez"
+        ).strip()
+    with col_mz:
+        mz_input = (
+            st.text_input("📐 Manzana (Mz):", placeholder="Ej. A")
+            .strip()
+            .upper()
+        )
+    with col_num:
+        num_input = (
+            st.text_input("🔢 Número / Lote:", placeholder="Ej. 12")
+            .strip()
+            .upper()
+        )
+    with col_tc:
+        tipo_cambio = st.number_input(
+            "💱 Tipo Cambio (S/):", value=3.75, step=0.01, format="%.2f"
+        )
+
+    btn_buscar = st.button(
+        "🔍 Buscar y Cotizar", type="primary", use_container_width=True
     )
 
-if st.button("🔍 Buscar y Cotizar", type="primary", use_container_width=True):
+if btn_buscar:
     if not mz_input or not num_input:
         st.warning("⚠️ Por favor ingresa la Manzana y el Número de lote.")
     elif df_lotes is None:
@@ -111,7 +120,7 @@ if st.button("🔍 Buscar y Cotizar", type="primary", use_container_width=True):
             # CÁLCULOS EN DÓLARES (USD)
             precio_lista_usd = metraje * precio_m2
             precio_10_desc_usd = precio_lista_usd * 0.90
-            precio_20_desc_usd = precio_lista_usd * 0.80
+            precio_20_desc_usd = precio_lista_usd * 0.80  # Solo uso interno
 
             precio_5_desc_usd = precio_lista_usd * 0.95
             inicial_40_usd = precio_5_desc_usd * 0.40
@@ -122,14 +131,14 @@ if st.button("🔍 Buscar y Cotizar", type="primary", use_container_width=True):
             tc = tipo_cambio
             precio_lista_pen = precio_lista_usd * tc
             precio_10_desc_pen = precio_10_desc_usd * tc
-            precio_20_desc_pen = precio_20_desc_usd * tc
+            precio_20_desc_pen = precio_20_desc_usd * tc  # Solo uso interno
 
             precio_5_desc_pen = precio_5_desc_usd * tc
             inicial_40_pen = inicial_40_usd * tc
             saldo_financiar_pen = saldo_financiar_usd * tc
             cuota_24_pen = cuota_24_usd * tc
 
-            # RESUMEN DEL LOTE
+            # RESUMEN GENERAL
             st.markdown("---")
             st.subheader(f"📍 Manzana {mz_input} — Lote {num_input}")
 
@@ -138,69 +147,109 @@ if st.button("🔍 Buscar y Cotizar", type="primary", use_container_width=True):
             m2.metric("Precio / m²", f"${precio_m2:,.2f} USD")
             m3.metric("Área Total", f"{metraje:,.2f} m²")
 
-            # TABLA DE PRECIOS AL CONTADO
-            st.markdown("### 💵 Precios al Contado / Lista")
-            c1, c2, c3 = st.columns(3)
-            c1.metric(
-                "Precio Lista",
-                f"${precio_lista_usd:,.2f} USD",
-                f"S/ {precio_lista_pen:,.2f}",
-            )
-            c2.metric(
-                "Con 10% Desc.",
-                f"${precio_10_desc_usd:,.2f} USD",
-                f"S/ {precio_10_desc_pen:,.2f}",
-            )
-            c3.metric(
-                "Con 20% Desc.",
-                f"${precio_20_desc_usd:,.2f} USD",
-                f"S/ {precio_20_desc_pen:,.2f}",
+            # PANEL DE CONTROL DE PRECIOS EN PANTALLA
+            tab1, tab2 = st.tabs(
+                ["💵 Precios al Contado", "📅 Plan Fraccionado (Financiado)"]
             )
 
-            # PLAN FRACCIONADO
-            st.markdown("### 📅 Plan Fraccionado (5% Desc. + 24 Cuotas)")
-            st.info(
-                f"""
-            * **Precio Total (5% Desc.):** ${precio_5_desc_usd:,.2f} USD / **S/ {precio_5_desc_pen:,.2f}**  
-            * **Cuota Inicial (40%):** ${inicial_40_usd:,.2f} USD / **S/ {inicial_40_pen:,.2f}**  
-            * **Saldo a Financiar:** ${saldo_financiar_usd:,.2f} USD / **S/ {saldo_financiar_pen:,.2f}**  
+            with tab1:
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.container(border=True).metric(
+                        "Precio Lista",
+                        f"${precio_lista_usd:,.2f} USD",
+                        f"S/ {precio_lista_pen:,.2f}",
+                    )
+                with c2:
+                    st.container(border=True).metric(
+                        "Con 10% Desc.",
+                        f"${precio_10_desc_usd:,.2f} USD",
+                        f"S/ {precio_10_desc_pen:,.2f}",
+                    )
+                with c3:
+                    # Tarjeta diferenciada para el 20% (Uso Interno)
+                    with st.container(border=True):
+                        st.caption("🔒 *Uso Interno / Límite de negociación*")
+                        st.metric(
+                            "Con 20% Desc.",
+                            f"${precio_20_desc_usd:,.2f} USD",
+                            f"S/ {precio_20_desc_pen:,.2f}",
+                        )
 
-            #### 💳 **24 Cuotas Mensuales de: ${cuota_24_usd:,.2f} USD  |  S/ {cuota_24_pen:,.2f}**
-            *(Calculado a un T.C. referencial de S/ {tc:.2f})*
-            """
-            )
+            with tab2:
+                st.info(
+                    f"""
+                * **Precio Total (5% Desc.):** ${precio_5_desc_usd:,.2f} USD  |  **S/ {precio_5_desc_pen:,.2f}**
+                * **Cuota Inicial (40%):** ${inicial_40_usd:,.2f} USD  |  **S/ {inicial_40_pen:,.2f}**
+                * **Saldo a Financiar:** ${saldo_financiar_usd:,.2f} USD  |  **S/ {saldo_financiar_pen:,.2f}**
 
-            # CONSTRUCCIÓN DEL MENSAJE PARA WHATSAPP
+                #### 💳 **24 Cuotas Mensuales de: ${cuota_24_usd:,.2f} USD  |  S/ {cuota_24_pen:,.2f}**
+                *(Calculado a un T.C. de S/ {tc:.2f})*
+                """
+                )
+
+            # CONSTRUCCIÓN DE MENSAJES INDEPENDIENTES PARA WHATSAPP
             saludo = (
                 f"Estimado(a) *{nombre_cliente}*,"
                 if nombre_cliente
                 else "Estimado(a) cliente,"
             )
 
-            mensaje_wa = f"""{saludo}
-Le envío la cotización detallada para el lote de su interés en *Proyectó La Estrella de Santa Clara*:
+            # 1. MENSAJE EN DÓLARES (USD)
+            mensaje_wa_usd = f"""{saludo}
+Le envío la cotización detallada para el lote de su interés en *Proyecto La Estrella de Santa Clara*:
 
 📌 *DATOS DEL LOTE:*
-• *Ubicación:* Manzana {mz_input} - Lote {num_input} ({ubicacion})
-• *Área Total:* {metraje:,.2f} m²
-• *Precio por m²:* ${precio_m2:,.2f} USD
+- *Ubicación:* Manzana {mz_input} - Lote {num_input} ({ubicacion})
+- *Área Total:* {metraje:,.2f} m²
+- *Precio por m²:* ${precio_m2:,.2f} USD
 
-💵 *OPCIONES AL CONTADO:*
-• *Precio Lista:* ${precio_lista_usd:,.2f} USD (aprox. S/ {precio_lista_pen:,.2f})
-• *Con 10% Descuento:* ${precio_10_desc_usd:,.2f} USD (aprox. S/ {precio_10_desc_pen:,.2f})
-• *Con 20% Descuento (Promocional):* ${precio_20_desc_usd:,.2f} USD (aprox. S/ {precio_20_desc_pen:,.2f})
+💵 *OPCIONES AL CONTADO (USD):*
+- *Precio Lista:* ${precio_lista_usd:,.2f} USD
+- *Con 10% Descuento:* ${precio_10_desc_usd:,.2f} USD
 
 📅 *OPCIÓN FINANCIADA (5% Desc.):*
-• *Precio Final:* ${precio_5_desc_usd:,.2f} USD (S/ {precio_5_desc_pen:,.2f})
-• *Cuota Inicial (40%):* ${inicial_40_usd:,.2f} USD (S/ {inicial_40_pen:,.2f})
-• *Saldo a financiar:* ${saldo_financiar_usd:,.2f} USD (S/ {saldo_financiar_pen:,.2f})
-• *Financiamiento:* 24 cuotas mensuales de *${cuota_24_usd:,.2f} USD* (aprox. *S/ {cuota_24_pen:,.2f}*)
+- *Precio Final:* ${precio_5_desc_usd:,.2f} USD
+- *Cuota Inicial (40%):* ${inicial_40_usd:,.2f} USD
+- *Saldo a financiar:* ${saldo_financiar_usd:,.2f} USD
+- *Financiamiento:* 24 cuotas mensuales de *${cuota_24_usd:,.2f} USD*
 
-*(T.C. referencial: S/ {tc:.2f})*
+Quedo a su entera disposición si desea coordinar una visita a la parcela o resolver cualquier consulta. ¡Aproveche esta gran oportunidad! 🏡✨"""
+
+            # 2. MENSAJE EN SOLES (PEN)
+            mensaje_wa_pen = f"""{saludo}
+Le envío la cotización detallada para el lote de su interés en *Proyecto La Estrella de Santa Clara*:
+
+📌 *DATOS DEL LOTE:*
+- *Ubicación:* Manzana {mz_input} - Lote {num_input} ({ubicacion})
+- *Área Total:* {metraje:,.2f} m²
+
+💵 *OPCIONES AL CONTADO (SOLES):*
+- *Precio Lista:* S/ {precio_lista_pen:,.2f}
+- *Con 10% Descuento:* S/ {precio_10_desc_pen:,.2f}
+
+📅 *OPCIÓN FINANCIADA (5% Desc.):*
+- *Precio Final:* S/ {precio_5_desc_pen:,.2f}
+- *Cuota Inicial (40%):* S/ {inicial_40_pen:,.2f}
+- *Saldo a financiar:* S/ {saldo_financiar_pen:,.2f}
+- *Financiamiento:* 24 cuotas mensuales de *S/ {cuota_24_pen:,.2f}*
+
+*(Tipo de cambio referencial aplicado: S/ {tc:.2f})*
 
 Quedo a su entera disposición si desea coordinar una visita a la parcela o resolver cualquier consulta. ¡Aproveche esta gran oportunidad! 🏡✨"""
 
             st.markdown("---")
-            st.markdown("### 📲 Mensaje listo para enviar por WhatsApp")
-            st.write("Copia el texto del recuadro para enviarlo por WhatsApp:")
-            st.code(mensaje_wa, language="markdown")
+            st.markdown("### 📲 Mensajes listos para enviar por WhatsApp")
+            st.caption(
+                "Selecciona la moneda en la que deseas enviar la propuesta al cliente:"
+            )
+
+            col_wa1, col_wa2 = st.columns(2)
+
+            with col_wa1:
+                st.subheader("🇺🇸 Cotización en Dólares (USD)")
+                st.code(mensaje_wa_usd, language="markdown")
+
+            with col_wa2:
+                st.subheader("🇵🇪 Cotización en Soles (PEN)")
+                st.code(mensaje_wa_pen, language="markdown")
