@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(
     page_title="Cotizador - La Estrella de Santa Clara",
     page_icon="🏢",
-    layout="wide",  # Cambiado a 'wide' para mejor aprovechamiento del espacio
+    layout="wide",
 )
 
 
@@ -177,16 +177,36 @@ if btn_buscar:
                         )
 
             with tab2:
-                st.info(
-                    f"""
-                * **Precio Total (5% Desc.):** ${precio_5_desc_usd:,.2f} USD  |  **S/ {precio_5_desc_pen:,.2f}**
-                * **Cuota Inicial (40%):** ${inicial_40_usd:,.2f} USD  |  **S/ {inicial_40_pen:,.2f}**
-                * **Saldo a Financiar:** ${saldo_financiar_usd:,.2f} USD  |  **S/ {saldo_financiar_pen:,.2f}**
+                # Opción 1: Recuadro estructurado con métricas y divisor
+                with st.container(border=True):
+                    st.markdown("#### 📅 Desglose del Plan Fraccionado")
 
-                #### 💳 **24 Cuotas Mensuales de: ${cuota_24_usd:,.2f} USD  |  S/ {cuota_24_pen:,.2f}**
-                *(Calculado a un T.C. de S/ {tc:.2f})*
-                """
-                )
+                    col_f1, col_f2, col_f3 = st.columns(3)
+                    with col_f1:
+                        st.metric(
+                            "Precio Total (5% Desc.)",
+                            f"${precio_5_desc_usd:,.2f} USD",
+                            f"S/ {precio_5_desc_pen:,.2f}",
+                        )
+                    with col_f2:
+                        st.metric(
+                            "Cuota Inicial (40%)",
+                            f"${inicial_40_usd:,.2f} USD",
+                            f"S/ {inicial_40_pen:,.2f}",
+                        )
+                    with col_f3:
+                        st.metric(
+                            "Saldo a Financiar",
+                            f"${saldo_financiar_usd:,.2f} USD",
+                            f"S/ {saldo_financiar_pen:,.2f}",
+                        )
+
+                    st.divider()
+
+                    st.markdown(
+                        f"### 💳 **24 Cuotas Mensuales de: ${cuota_24_usd:,.2f} USD | S/ {cuota_24_pen:,.2f}**"
+                    )
+                    st.caption(f"*(Calculado a un T.C. de S/ {tc:.2f})*")
 
             # CONSTRUCCIÓN DE MENSAJES INDEPENDIENTES PARA WHATSAPP
             saludo = (
@@ -236,7 +256,7 @@ Le envío la cotización detallada para el lote de su interés en *Proyecto La E
 
 *(Tipo de cambio referencial aplicado: S/ {tc:.2f})*
 
-Quedo a su entera disposición si desea coordinar una visita a la parcela o resolver cualquier consulta. ¡Aproveche esta gran oportunidad! 🏡✨"""
+Quedo a su entera disposición si desea coordinar una visita o resolver cualquier consulta. ¡Aproveche esta gran oportunidad! 🏡✨"""
 
             st.markdown("---")
             st.markdown("### 📲 Mensajes listos para enviar por WhatsApp")
